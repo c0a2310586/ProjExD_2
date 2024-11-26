@@ -30,9 +30,43 @@ def check_bound(rct: pg.Rect) -> tuple[bool, bool]:
     return yoko, tate
 
 
+def get_kk_img(sum_mv: tuple[int, int]) -> pg.Surface:
+    """
+    移動量の合計値タプルに対応する向きの画像Surfaceを返す
+    引数：移動量の合計値タプル
+    戻り値：移動量の合計値タプルに対応する向きのこうかとん画像Surface
+    """
+    kk_left_img = pg.image.load("fig/3.png") 
+    kk_right_img = pg.transform.flip(kk_left_img, True, False) 
+    angle = 0
+    
+    if sum_mv[0] == -5:  # 左向きこうかとんを使用する
+        img = kk_left_img
+        if sum_mv == (-5, +5):  # 左下
+            angle = 45
+        elif sum_mv == (-5, 0):  # 左
+            angle = 0
+        elif sum_mv == (-5, -5):  # 左上
+            angle = -45
+    else:  # 右向きこうかとんを使用する
+        img = kk_right_img
+        if sum_mv == (0, -5):  # 上
+            angle = 90
+        elif sum_mv == (+5, -5):  # 右上
+            angle = 45
+        elif sum_mv == (+5, 0):  # 右
+            angle = 0
+        elif sum_mv == (+5, +5):  # 右下
+            angle = -45
+        elif sum_mv == (0, +5):  # 下
+            angle = -90
+    return pg.transform.rotozoom(img, angle, 0.9)
+
+
 def init_bb_imgs() -> tuple[list[pg.Surface], list[int]]:
     """
     サイズの異なる爆弾Surfaceを要素としたリストと加速度リストを生成する
+    引数：なし
     戻り値：爆弾のサイズごとのSurfaceリスト,各段階の加速度リストのタプル
     """
     bb_imgs = []  # 爆弾Surfaceリスト
@@ -107,6 +141,7 @@ def main():
             if key_lst[key] == True:
                 sum_mv[0] += tpl[0]
                 sum_mv[1] += tpl[1]
+        kk_img = get_kk_img(tuple(sum_mv))
         kk_rct.move_ip(sum_mv)
         # こうかとんが画面外なら，元の場所に戻す
         if check_bound(kk_rct) != (True, True):
