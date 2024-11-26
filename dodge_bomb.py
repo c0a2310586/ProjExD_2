@@ -30,6 +30,21 @@ def check_bound(rct: pg.Rect) -> tuple[bool, bool]:
     return yoko, tate
 
 
+def init_bb_imgs() -> tuple[list[pg.Surface], list[int]]:
+    """
+    サイズの異なる爆弾Surfaceを要素としたリストと加速度リストを生成する
+    戻り値：爆弾のサイズごとのSurfaceリスト,各段階の加速度リストのタプル
+    """
+    bb_imgs = []  # 爆弾Surfaceリスト
+    bb_accs = [a for a in range(1, 11)]  # 加速度リスト（1～10）
+    for r in range(1, 11):  # 爆弾のサイズを10段階で生成
+        bb_img = pg.Surface((20 * r, 20 * r))
+        pg.draw.circle(bb_img, (255, 0, 0), (10 * r, 10 * r), 10 * r)
+        bb_img.set_colorkey((0, 0, 0))  # 四隅の黒を透過させる
+        bb_imgs.append(bb_img)  # リストに追加
+    return bb_imgs, bb_accs
+
+
 def gameover(screen: pg.Surface) -> None:
     """
     ゲームオーバー時に，半透明の黒い画面上に「Game Over」と表示する
@@ -61,21 +76,6 @@ def gameover(screen: pg.Surface) -> None:
     time.sleep(5)  # 5秒間表示させる
 
 
-def init_bb_imgs() -> tuple[list[pg.Surface], list[int]]:
-    """
-    サイズの異なる爆弾Surfaceを要素としたリストと加速度リストを生成する
-    戻り値：爆弾のサイズごとのSurfaceリスト,各段階の加速度リストのタプル
-    """
-    bb_imgs = []  # 爆弾Surfaceリスト
-    bb_accs = [a for a in range(1, 11)]  # 加速度リスト（1～10）
-    for r in range(1, 11):  # 爆弾のサイズを10段階で生成
-        bb_img = pg.Surface((20 * r, 20 * r))
-        pg.draw.circle(bb_img, (255, 0, 0), (10 * r, 10 * r), 10 * r)
-        bb_imgs.append(bb_img)  # リストに追加
-    return bb_imgs, bb_accs
-
-
-
 def main():
     pg.display.set_caption("逃げろ！こうかとん")
     screen = pg.display.set_mode((WIDTH, HEIGHT))
@@ -85,7 +85,7 @@ def main():
     kk_rct.center = 300, 200
     bb_img = pg.Surface((20, 20))  # 爆弾用の空Surface
     pg.draw.circle(bb_img, (255, 0, 0), (10, 10), 10)  # 爆弾円を描く
-    bb_img.set_colorkey((0, 0, 0))  # 四隅の黒を透過させる
+    bb_img.set_colorkey((0, 0, 0))  # 四隅の黒を透過させる  
     bb_rct = bb_img.get_rect()  # 爆弾Rectの抽出
     bb_rct.centerx = random.randint(0, WIDTH)
     bb_rct.centery = random.randint(0, HEIGHT)
@@ -98,6 +98,7 @@ def main():
                 return
         if kk_rct.colliderect(bb_rct):
             gameover(screen)
+            return
         screen.blit(bg_img, [0, 0]) 
 
         key_lst = pg.key.get_pressed()
@@ -111,7 +112,13 @@ def main():
         if check_bound(kk_rct) != (True, True):
             kk_rct.move_ip(-sum_mv[0], -sum_mv[1])
         screen.blit(kk_img, kk_rct)
-        bb_rct.move_ip(vx, vy)  # 爆弾動く      
+
+        bb_imgs, bb_accs = init_bb_imgs()  # 爆弾の加速と拡大
+        avx = vx*bb_accs[min(tmr//500, 9)]
+        avy = vy*bb_accs[min(tmr//500, 9)]
+        bb_img = bb_imgs[min(tmr//500, 9)]
+
+        bb_rct.move_ip(avx, avy)  # 爆弾動く      
         yoko, tate = check_bound(bb_rct)
         if not yoko:  # 横にはみ出てる
             vx *= -1
