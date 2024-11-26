@@ -1,6 +1,7 @@
 import os
 import random
 import sys
+import time
 
 import pygame as pg
 
@@ -29,6 +30,52 @@ def check_bound(rct: pg.Rect) -> tuple[bool, bool]:
     return yoko, tate
 
 
+def gameover(screen: pg.Surface) -> None:
+    """
+    ゲームオーバー時に，半透明の黒い画面上に「Game Over」と表示する
+    泣いているこうかとん画像を貼り付ける
+    この状態を5秒間表示させる
+    引数：Surface
+    """
+    # 半透明の黒い画面を描画
+    overlay = pg.Surface((WIDTH, HEIGHT))  # 画面サイズのSurfaceを作成する
+    overlay.fill((0, 0, 0))  # 黒で塗りつぶす
+    overlay.set_alpha(200)  # 半透明を200に設定する
+    screen.blit(overlay, (0, 0))
+
+    # 「Game Over」のテキストの表示
+    font_go = pg.font.Font(None, 80)  # フォントサイズは80
+    text = font_go.render("Game Over", True, (255, 255, 255))  
+    text_rct = text.get_rect()
+    text_rct.center=(WIDTH/2, HEIGHT/2)  # 中央に配置
+    screen.blit(text, text_rct)
+
+    kc_img = pg.image.load("fig/8.png")  # 泣いているこうかとん画像を読み込む
+    kc_rct = kc_img.get_rect()  
+    kc_rct.center= WIDTH/2-250, HEIGHT/2
+    screen.blit(kc_img, kc_rct)
+    kc_rct.center= WIDTH/2+250, HEIGHT/2
+    screen.blit(kc_img, kc_rct)
+        
+    pg.display.update()
+    time.sleep(5)  # 5秒間表示させる
+
+
+def init_bb_imgs() -> tuple[list[pg.Surface], list[int]]:
+    """
+    サイズの異なる爆弾Surfaceを要素としたリストと加速度リストを生成する
+    戻り値：爆弾のサイズごとのSurfaceリスト,各段階の加速度リストのタプル
+    """
+    bb_imgs = []  # 爆弾Surfaceリスト
+    bb_accs = [a for a in range(1, 11)]  # 加速度リスト（1～10）
+    for r in range(1, 11):  # 爆弾のサイズを10段階で生成
+        bb_img = pg.Surface((20*r, 20*r))
+        pg.draw.circle(bb_img, (255, 0, 0), (10*r, 10*r), 10*r)
+        bb_imgs.append(bb_img)  # リストに追加
+    return bb_imgs, bb_accs
+
+
+
 def main():
     pg.display.set_caption("逃げろ！こうかとん")
     screen = pg.display.set_mode((WIDTH, HEIGHT))
@@ -50,8 +97,7 @@ def main():
             if event.type == pg.QUIT: 
                 return
         if kk_rct.colliderect(bb_rct):
-            print("ゲームオーバー")
-            return  # ゲームオーバー
+            gameover(screen)
         screen.blit(bg_img, [0, 0]) 
 
         key_lst = pg.key.get_pressed()
