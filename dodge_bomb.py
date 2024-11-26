@@ -52,9 +52,9 @@ def gameover(screen: pg.Surface) -> None:
 
     kc_img = pg.image.load("fig/8.png")  # 泣いているこうかとん画像を読み込む
     kc_rct = kc_img.get_rect()  
-    kc_rct.center= WIDTH/2-250, HEIGHT/2
+    kc_rct.center= WIDTH / 2 - 250, HEIGHT / 2
     screen.blit(kc_img, kc_rct)
-    kc_rct.center= WIDTH/2+250, HEIGHT/2
+    kc_rct.center= WIDTH/2 + 250, HEIGHT / 2
     screen.blit(kc_img, kc_rct)
         
     pg.display.update()
@@ -69,8 +69,8 @@ def init_bb_imgs() -> tuple[list[pg.Surface], list[int]]:
     bb_imgs = []  # 爆弾Surfaceリスト
     bb_accs = [a for a in range(1, 11)]  # 加速度リスト（1～10）
     for r in range(1, 11):  # 爆弾のサイズを10段階で生成
-        bb_img = pg.Surface((20*r, 20*r))
-        pg.draw.circle(bb_img, (255, 0, 0), (10*r, 10*r), 10*r)
+        bb_img = pg.Surface((20 * r, 20 * r))
+        pg.draw.circle(bb_img, (255, 0, 0), (10 * r, 10 * r), 10 * r)
         bb_imgs.append(bb_img)  # リストに追加
     return bb_imgs, bb_accs
 
